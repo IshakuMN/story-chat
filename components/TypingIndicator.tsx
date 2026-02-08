@@ -10,9 +10,9 @@ export const TypingIndicator: React.FC<{ isMe?: boolean }> = ({ isMe }) => {
       transition={{ duration: 0.2 }}
       className={cn(
         "flex items-center gap-1 px-3 py-2 w-fit mb-1.5 shadow-md",
-        isMe 
-          ? "bg-[#DCF8C6] rounded-[7.5px] rounded-tr-none ml-auto" 
-          : "bg-[#FFFFFF] rounded-[7.5px] rounded-tl-none mr-auto"
+        isMe
+          ? "bg-[#DCF8C6] rounded-[7.5px] rounded-tr-none ml-auto"
+          : "bg-[#FFFFFF] rounded-[7.5px] rounded-tl-none mr-auto",
       )}
     >
       <Dot delay={0} />
