@@ -1,9 +1,12 @@
 import React, { useEffect, useRef } from "react";
-import { useCurrentFrame } from "remotion";
+import { useCurrentFrame, Audio, staticFile } from "remotion";
 import { Script } from "@/lib/scriptSchema";
 import { calculateScriptTimeline } from "@/lib/timingUtils";
 import { MinimalMessageBubble } from "@/components/MinimalMessageBubble";
+import { MinimalTypingBubble } from "@/components/MinimalTypingBubble";
 
+// Using local static files is more reliable than external URLs that might be blocked or have invalid MIME types
+// The files are located in public/audio/
 export const MinimalChatVideo: React.FC<{ script: Script }> = ({ script }) => {
   const frame = useCurrentFrame();
 
@@ -20,6 +23,8 @@ export const MinimalChatVideo: React.FC<{ script: Script }> = ({ script }) => {
   const currentMessage = timeline.find(
     (m) => frame >= m.startFrame && frame < m.typingEndFrame,
   );
+
+  const isOtherTyping = currentMessage && currentMessage.from !== me;
 
   // Typing logic for "Me"
   let inputValue = "";
@@ -41,10 +46,26 @@ export const MinimalChatVideo: React.FC<{ script: Script }> = ({ script }) => {
         behavior: "smooth",
       });
     }
-  }, [visibleMessages.length, inputValue]);
+  }, [visibleMessages.length, inputValue, isOtherTyping]);
 
   return (
     <div className="flex flex-col h-full w-full bg-stone-50 text-black font-sans relative overflow-hidden">
+      {/* Audio Manager - Only render audio for identifying current typing action to avoid "too many audio tags" error */}
+      {currentMessage && (
+        <Audio
+          key={`audio-${currentMessage.startFrame}`}
+          src={staticFile(
+            currentMessage.from === me
+              ? "audio/keyboard.mp3"
+              : "audio/typing-notification.mp3",
+          )}
+          startFrom={currentMessage.startFrame}
+          endAt={currentMessage.typingEndFrame}
+          volume={currentMessage.from === me ? 0.5 : 0.3}
+          loop={true}
+        />
+      )}
+
       {/* Header */}
       <header className="h-16 bg-white border-b border-gray-200 flex items-center px-6 justify-between flex-shrink-0 z-10">
         <div className="flex items-center gap-3">
@@ -77,6 +98,7 @@ export const MinimalChatVideo: React.FC<{ script: Script }> = ({ script }) => {
             isMe={msg.from === me}
           />
         ))}
+        {isOtherTyping && <MinimalTypingBubble />}
       </div>
 
       {/* Input Area */}
